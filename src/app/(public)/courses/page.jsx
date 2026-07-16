@@ -21,10 +21,10 @@ export default async function CoursesPage() {
               <span className="text-primary"> Smartly</span>
             </h1>
 
-            <p className="max-w-2xl text-lg leading-relaxed text-text-secondary">
+            {/* <p className="max-w-2xl text-lg leading-relaxed text-text-secondary">
               Structured courses for SSC, HSC, and Admission preparation with
               premium learning experience.
-            </p>
+            </p> */}
           </div>
         </div>
 
