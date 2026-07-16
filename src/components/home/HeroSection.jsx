@@ -94,13 +94,13 @@ export default function HeroSection() {
           />
 
           {/* Floating Cards */}
-          <div className="absolute left-0 top-20 rounded-3xl bg-primary p-5 text-white shadow-xl">
-            🚀 Smart Learning
+          <div className="absolute left-0 top-20 flex min-h-[5.5rem] min-w-[10rem] flex-col items-center justify-center rounded-3xl bg-primary p-5 text-white shadow-xl">
+            <p className="text-sm font-semibold">🚀 Smart Learning</p>
           </div>
 
-          <div className="absolute bottom-16 right-0 rounded-3xl bg-white p-5 shadow-xl">
-            <p className="font-bold text-text-primary">10K+ Students</p>
-            <p className="text-sm text-text-secondary">Learning daily</p>
+          <div className="absolute bottom-16 right-0 flex min-h-[5.5rem] min-w-[10rem] flex-col items-center justify-center rounded-3xl bg-white p-5 shadow-xl">
+            <p className="text-sm font-bold text-text-primary">10K+ Students</p>
+            <p className="text-xs text-text-secondary">Learning daily</p>
           </div>
         </div>
       </div>
