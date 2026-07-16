@@ -21,3 +21,22 @@ export async function getCurrentUser() {
 
   return result.data;
 }
+
+export async function getOptionalCurrentUser() {
+  const cookieStore = await cookies();
+
+  const res = await fetch(`${API}/users/current-user`, {
+    headers: {
+      Cookie: cookieStore.toString(),
+    },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    return null;
+  }
+
+  const result = await res.json();
+
+  return result.data;
+}
