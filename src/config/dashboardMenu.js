@@ -31,6 +31,11 @@ export const dashboardMenus = {
       href: "/dashboard/student/settings",
       icon: "Settings",
     },
+    {
+      title: "Learning History",
+      href: "/dashboard/student/learning-history",
+      icon: "History",
+    },
   ],
 
   teacher: [
@@ -45,13 +50,23 @@ export const dashboardMenus = {
       icon: "BookOpen",
     },
     {
+      title: "Blogs",
+      href: "/dashboard/teacher/blogs",
+      icon: "FileText",
+    },
+    {
       title: "Students",
       href: "/dashboard/teacher/students",
       icon: "Users",
     },
     {
-      title: "Assignments",
-      href: "/dashboard/teacher/assignments",
+      title: "Enrollments",
+      href: "/dashboard/teacher/enrollments",
+      icon: "ClipboardList",
+    },
+    {
+      title: "Enrollment Requests",
+      href: "/dashboard/teacher/enrollment-requests",
       icon: "ClipboardList",
     },
     {
