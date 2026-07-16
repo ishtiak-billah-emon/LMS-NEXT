@@ -11,6 +11,7 @@ import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
 import { useAuth } from "@/hooks/useAuth";
+import Link from "next/link";
 
 const Register = () => {
   const router = useRouter();
@@ -268,6 +269,16 @@ const Register = () => {
           </Field>
         </FieldGroup>
       </form>
+      {/* Sign Up Link */}
+      <div className="mt-6 text-center text-sm text-gray-600">
+        Already have an account?{" "}
+        <Link
+          href="/login"
+          className="font-semibold text-primary hover:underline"
+        >
+          Login
+        </Link>
+      </div>
     </div>
   );
 };
