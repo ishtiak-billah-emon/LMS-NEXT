@@ -19,4 +19,25 @@ export const authService = {
   getCurrentUser: () => handleRequest(api.get("/users/current-user")),
 
   refreshToken: () => handleRequest(api.post("/users/refresh-token")),
+
+  changePassword: (payload) =>
+    handleRequest(api.patch("/users/change-password", payload)),
+
+  forgotPassword: (email) =>
+    handleRequest(api.post("/users/forgot-password", { email })),
+
+  resetPassword: (token, newPassword) =>
+    handleRequest(
+      api.post(`/users/reset-password/${token}`, { newPassword })
+    ),
+
+  setDailyGoal: (dailyLessonGoal) =>
+    handleRequest(api.patch("/users/daily-goal", { dailyLessonGoal })),
+
+  updateProfile: (payload) =>
+    handleRequest(
+      api.patch("/users/update-profile", payload, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+    ),
 };
