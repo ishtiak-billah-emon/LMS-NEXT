@@ -1,5 +1,6 @@
 import MarkCompleteButton from "@/components/course/CompletedButton";
 import { getLesson } from "@/services/lesson.services";
+import { getCurrentUser } from "@/lib/server/auth";
 
 import {
   Lock,
@@ -7,6 +8,8 @@ import {
   ChevronLeft,
   ChevronRight,
   CheckCircle2,
+  FileText,
+  ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -29,7 +32,17 @@ export default async function LearnPage({ params }) {
     throw new Error("Failed to load lesson");
   }
 
-  const { lesson, course, section, canWatch } = response.data;
+  const { lesson, course, section, canWatch, completed } = response.data;
+  const user = await getCurrentUser();
+  const teacherId = String(
+    typeof course.teacher === "object"
+      ? course.teacher?._id || course.teacher?.id
+      : course.teacher,
+  );
+  const userId = String(user?._id || user?.id);
+  const isCourseTeacher =
+    user?.role?.toLowerCase() === "teacher" && teacherId === userId;
+  const canWatchLesson = canWatch || isCourseTeacher;
 
   function getEmbedUrl(url) {
     const id =
@@ -77,7 +90,7 @@ export default async function LearnPage({ params }) {
             <div className="overflow-hidden rounded-[32px] border border-border bg-card shadow-xl">
               {/* Video */}
               <div className="relative aspect-video bg-black">
-                {canWatch ? (
+                {canWatchLesson ? (
                   <iframe
                     src={getEmbedUrl(lesson.videoUrl)}
                     title={lesson.title}
@@ -138,15 +151,43 @@ export default async function LearnPage({ params }) {
                 <p className="max-w-3xl text-lg leading-relaxed text-text-secondary">
                   {course.description}
                 </p>
-                {/* <div className="mt-8 flex justify-end">
-                  {canWatch && (
+
+                {canWatchLesson && lesson.resources?.length > 0 && (
+                  <div className="mt-8 border-t border-border pt-8">
+                    <h3 className="mb-4 flex items-center gap-2 text-xl font-bold text-text-primary">
+                      <FileText className="h-5 w-5 text-primary" />
+                      Resources
+                    </h3>
+
+                    <ul className="space-y-3">
+                      {lesson.resources.map((resource) => (
+                        <li key={resource._id}>
+                          <a
+                            href={resource.fileUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center justify-between gap-3 rounded-2xl border border-border p-4 transition hover:border-primary/40 hover:bg-muted"
+                          >
+                            <span className="font-medium text-text-primary">
+                              {resource.title}
+                            </span>
+
+                            <ExternalLink className="h-4 w-4 text-text-secondary" />
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {canWatchLesson && (
+                  <div className="mt-8 flex justify-end border-t border-border pt-8">
                     <MarkCompleteButton
                       courseSlug={course.slug}
                       lessonSlug={lesson.slug}
-                      completed={lesson.completed}
+                      completed={completed}
                     />
-                  )}
-                </div> */}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -185,6 +226,7 @@ export default async function LearnPage({ params }) {
                   <div className="space-y-3">
                     {section.lessons.map((item) => {
                       const isActive = item.slug === lesson.slug;
+                      const isLessonUnlocked = item.preview || isCourseTeacher;
 
                       return (
                         <Link
@@ -200,12 +242,12 @@ export default async function LearnPage({ params }) {
                             {/* Icon */}
                             <div
                               className={`mt-1 flex h-10 w-10 items-center justify-center rounded-xl ${
-                                item.preview
+                                isLessonUnlocked
                                   ? "bg-primary text-white"
                                   : "bg-slate-200 text-slate-500"
                               }`}
                             >
-                              {item.preview ? (
+                              {isLessonUnlocked ? (
                                 <PlayCircle className="h-4 w-4" />
                               ) : (
                                 <Lock className="h-4 w-4" />
@@ -229,7 +271,7 @@ export default async function LearnPage({ params }) {
                                   {item.duration}
                                 </span>
 
-                                {item.preview ? (
+                                {isLessonUnlocked ? (
                                   <CheckCircle2 className="h-4 w-4 text-green-500" />
                                 ) : (
                                   <Lock className="h-4 w-4 text-slate-400" />
