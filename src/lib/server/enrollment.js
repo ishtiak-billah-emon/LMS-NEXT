@@ -20,3 +20,26 @@ export async function getMyCourses() {
 
   return result.data;
 }
+
+export async function getEnrollments() {
+  const cookieStore = await cookies();
+
+  const cookieHeader = cookieStore
+    .getAll()
+    .map((cookie) => `${cookie.name}=${cookie.value}`)
+    .join("; ");
+
+  const res = await fetch(`${API}/enrollments`, {
+    method: "GET",
+    headers: {
+      Cookie: cookieHeader,
+    },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch enrollments");
+  }
+
+  return res.json();
+}
