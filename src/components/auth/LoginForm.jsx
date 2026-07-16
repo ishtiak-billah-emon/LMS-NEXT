@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/context/AuthProvider";
 import { useRouter } from "next/navigation";
@@ -69,7 +70,7 @@ export default function LoginForm() {
     <div className="w-full">
       {/* Header */}
       <div className="mb-4 md:mb-8">
-        <BackButton/>
+        <BackButton />
       </div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Login</h1>
@@ -117,6 +118,15 @@ export default function LoginForm() {
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
+
+          <div className="flex justify-end">
+            <Link
+              href="/forgot-password"
+              className="text-sm font-medium text-indigo-600 hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
         </div>
 
         {/* Message */}
@@ -149,6 +159,16 @@ export default function LoginForm() {
           >
             {loading ? "Logging in..." : "Login"}
           </button>
+        </div>
+        {/* Sign Up Link */}
+        <div className="mt-6 text-center text-sm text-gray-600">
+          Don't have an account?{" "}
+          <Link
+            href="/register"
+            className="font-semibold text-primary hover:underline"
+          >
+            Sign up
+          </Link>
         </div>
       </form>
     </div>
