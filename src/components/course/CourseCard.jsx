@@ -22,7 +22,7 @@ export default function CourseCard({ course }) {
         />
 
         <div className="absolute left-4 top-4 rounded-full bg-primary px-4 py-1 text-xs font-semibold text-white">
-          {course.classType}
+          {course.classType || course.category}
         </div>
       </div>
 
@@ -54,12 +54,11 @@ export default function CourseCard({ course }) {
             <Users className="h-4 w-4" />
             {course.totalStudents.toLocaleString()} Students
           </div>
-
+          {/* 
           <div className="flex items-center gap-1">
             <BookOpen className="h-4 w-4" />
-            {/* {totalLessons} Lessons */}
-            <span> Total lesson Will add later</span>
-          </div>
+             {totalLessons} Lessons *
+          </div> */}
         </div>
 
         {/* Pricing */}
@@ -67,10 +66,13 @@ export default function CourseCard({ course }) {
           <span className="text-3xl font-black text-primary">
             ৳{course.discountPrice.toLocaleString()}
           </span>
-
-          <span className="text-lg line-through text-text-secondary">
-            ৳{course.price.toLocaleString()}
-          </span>
+          {course.discountPrice === course.price ? (
+            ""
+          ) : (
+            <span className="text-lg line-through text-text-secondary">
+              ৳{course.price.toLocaleString()}
+            </span>
+          )}
         </div>
 
         {/* CTA */}
