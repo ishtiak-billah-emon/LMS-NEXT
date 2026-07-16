@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 
 import { getCourse } from "@/lib/server/course";
+import EnrollmentRequestModal from "./EnrollmentRequestModal";
+import ReviewSection from "./ReviewSection";
 
 import {
   Accordion,
@@ -29,7 +31,13 @@ import { Button } from "@/components/ui/button";
 export default async function CourseDetails({ params }) {
   const { courseId } = await params;
 
-  const {course, isEnrolled} = await getCourse(courseId);
+  const {
+    course,
+    isEnrolled,
+    progress = 0,
+    completedLessons = 0,
+    totalLessons = 0,
+  } = await getCourse(courseId);
   console.log("isEnrolled:", isEnrolled);
 
   if (!course) {
@@ -40,11 +48,6 @@ export default async function CourseDetails({ params }) {
   // COURSE STATS
   // =========================
 
-  const totalLessons = course.sections.reduce(
-    (acc, section) => acc + section.lessons.length,
-    0,
-  );
-
   const totalSections = course.sections.length;
 
   const totalPreviewLessons = course.sections.reduce(
@@ -52,6 +55,11 @@ export default async function CourseDetails({ params }) {
       acc + section.lessons.filter((lesson) => lesson.preview).length,
     0,
   );
+
+  const hasDiscount =
+    typeof course.discountPrice === "number" &&
+    course.discountPrice > 0 &&
+    course.discountPrice < course.price;
 
   return (
     <main className="bg-background">
@@ -72,11 +80,22 @@ export default async function CourseDetails({ params }) {
             <div>
               {/* Category */}
               <div className="mb-6 inline-flex rounded-full bg-primary/10 px-5 py-2 text-sm font-semibold text-primary">
-                {course.classType} 
+                {course.classType || course.category}
+              </div>
+
+              {/* Thumbnail */}
+              <div className="overflow-hidden rounded-[32px] border border-border bg-card shadow-xl">
+                <Image
+                  src={course.thumbnail}
+                  alt={course.title}
+                  width={1200}
+                  height={700}
+                  className="h-full max-h-[600px] w-full object-cover"
+                />
               </div>
 
               {/* Title */}
-              <h1 className="mb-6 max-w-4xl text-4xl font-black leading-tight text-text-primary md:text-5xl lg:text-6xl">
+              <h1 className="mb-6 mt-2 md:mt-4 max-w-4xl text-4xl font-black leading-tight text-text-primary md:text-5xl lg:text-6xl">
                 {course.title}
               </h1>
 
@@ -135,38 +154,49 @@ export default async function CourseDetails({ params }) {
                   </div>
                 </div>
               </div>
-
-              {/* Thumbnail */}
-              <div className="overflow-hidden rounded-[32px] border border-border bg-card shadow-xl">
-                <Image
-                  src={course.thumbnail}
-                  alt={course.title}
-                  width={1200}
-                  height={700}
-                  className="h-full max-h-[600px] w-full object-cover"
-                />
-              </div>
             </div>
 
             {/* =========================================================
                 PURCHASE CARD
             ========================================================= */}
-            <div className="relative">
+            <div className="relative lg:pt-[60px]">
               <div className="sticky top-24 overflow-hidden rounded-[32px] border border-border bg-card shadow-xl">
                 {/* Top Gradient */}
                 <div className="h-2 bg-gradient-to-r from-primary to-secondary"></div>
 
                 <div className="p-8">
+                  {isEnrolled && (
+                    <div className="mb-6 rounded-2xl border border-border bg-muted/40 p-4">
+                      <div className="mb-2 flex items-center justify-between text-sm">
+                        <span className="font-medium text-text-primary">
+                          Your progress
+                        </span>
+                        <span className="text-text-secondary">
+                          {completedLessons} of {totalLessons} lessons ·{" "}
+                          {progress}%
+                        </span>
+                      </div>
+                      <div className="h-2 rounded-full bg-slate-200">
+                        <div
+                          className="h-2 rounded-full bg-primary"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   {/* Price */}
                   <div className="mb-8">
                     <div className="mb-2 flex items-center gap-4">
                       <h2 className="text-5xl font-black text-primary">
-                        ৳{course.discountPrice}
+                        ৳{hasDiscount ? course.discountPrice : course.price}
                       </h2>
 
-                      <span className="text-2xl text-text-secondary line-through">
-                        ৳{course.price}
-                      </span>
+                      {hasDiscount && (
+                        <span className="text-2xl text-text-secondary line-through">
+                          ৳{course.price}
+                        </span>
+                      )}
                     </div>
 
                     <p className="text-sm text-text-secondary">
@@ -174,20 +204,7 @@ export default async function CourseDetails({ params }) {
                     </p>
                   </div>
 
-                  {/* Buttons */}
-                  <div className="mb-8 space-y-4">
-                    <Button className="h-14 w-full rounded-2xl bg-primary text-base font-bold hover:bg-primary-hover">
-                      Purchase Course
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      className="h-14 w-full rounded-2xl border-border text-base"
-                    >
-                      <Gift className="mr-2 h-5 w-5" />
-                      Gift This Course
-                    </Button>
-                  </div>
+                  <EnrollmentRequestModal course={course} />
 
                   {/* Features */}
                   <div className="space-y-5 border-t border-border pt-8">
@@ -374,6 +391,11 @@ export default async function CourseDetails({ params }) {
           </Accordion>
         </div>
       </section>
+
+      {/* =========================================================
+          REVIEWS SECTION
+      ========================================================= */}
+      <ReviewSection courseId={course._id} isEnrolled={isEnrolled} />
     </main>
   );
 }
