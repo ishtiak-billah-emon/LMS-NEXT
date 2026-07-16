@@ -27,6 +27,7 @@ import {
 const NAV_LINKS = [
   { name: "Home", path: "/" },
   { name: "Courses", path: "/courses" },
+  { name: "Blogs", path: "/blogs" },
   { name: "About Us", path: "/about-us" },
 ];
 
