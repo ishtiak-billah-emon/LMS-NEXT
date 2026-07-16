@@ -6,11 +6,22 @@ import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 
-import { ArrowUpRight, Star, Users, BookOpen } from "lucide-react";
+import { ArrowUpRight, Star, Users, BookOpen, Clock3 } from "lucide-react";
 
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
+
+function formatDuration(totalSeconds) {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+  if (hours > 0) {
+    return `${hours}h${minutes > 0 ? ` ${minutes}m` : ""}`;
+  }
+
+  return `${minutes}m`;
+}
 
 export default function FeaturedCourses({ courses }) {
   return (
@@ -79,7 +90,24 @@ export default function FeaturedCourses({ courses }) {
           }}
           className="!pb-16"
         >
-          {courses.map((course) => (
+          {courses.map((course) => {
+            const sections = course.sections ?? [];
+            const totalLessons = sections.reduce(
+              (count, section) => count + (section.lessons?.length ?? 0),
+              0,
+            );
+            const totalDuration = sections.reduce(
+              (duration, section) =>
+                duration +
+                (section.lessons ?? []).reduce(
+                  (lessonDuration, lesson) =>
+                    lessonDuration + (Number(lesson.duration) || 0),
+                  0,
+                ),
+              0,
+            );
+
+            return (
             <SwiperSlide key={course.slug}>
               <Link
                 href={`/courses/${course.slug}`}
@@ -116,59 +144,69 @@ export default function FeaturedCourses({ courses }) {
                     </div>
                   </div>
 
-                  {/* Content */}
-                  <div className="flex flex-1 flex-col p-6">
-                    {/* Stats */}
-                    <div className="mb-5 flex items-center gap-4">
-                      <div className="flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                   {/* Content */}
+                   <div className="flex flex-1 flex-col p-6">
+                     {/* Stats */}
+                     <div className="mb-5 flex flex-wrap items-center gap-4">
+                       <div className="flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+                         <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
 
-                        <span>{course.rating}</span>
-                      </div>
+                         <span>{course.rating}</span>
+                       </div>
 
-                      <div className="flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-sm font-medium text-text-secondary">
-                        <Users className="h-4 w-4" />
+                       <div className="flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-sm font-medium text-text-secondary">
+                         <Users className="h-4 w-4" />
 
-                        <span>{course.totalStudents}+</span>
-                      </div>
-                    </div>
+                         <span>{course.totalStudents}+</span>
+                       </div>
 
-                    {/* Title */}
-                    <h3 className="mb-4 line-clamp-2 text-2xl font-black leading-tight text-text-primary transition group-hover:text-primary">
-                      {course.title}
-                    </h3>
+                       <div className="flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-sm font-medium text-text-secondary">
+                         <Clock3 className="h-4 w-4" />
 
-                    {/* Description */}
-                    <p className="mb-6 line-clamp-3 flex-1 leading-relaxed  text-black">
-                      {course.description}
-                    </p>
+                         <span>{formatDuration(totalDuration)}</span>
+                       </div>
+                     </div>
 
-                    {/* Teacher */}
-                    <p className="mb-6 flex-1 leading-relaxed text-text-secondary">
-                      Instructor: {course.teacher.fullName}
-                    </p>
+                     {/* Title */}
+                     <h3 className="mb-4 min-h-[58px] line-clamp-2 text-2xl font-black leading-tight text-text-primary transition group-hover:text-primary">
+                       {course.title}
+                     </h3>
 
-                    {/* Footer */}
-                    <div className="mt-auto flex items-center justify-between border-t border-border pt-5">
-                      <div className="flex items-center gap-2 text-sm font-medium text-text-secondary">
-                        {/* Lessons */}
-                        <div className="flex items-center gap-2 text-sm font-medium text-text-secondary">
-                          <BookOpen className="h-4 w-4 text-primary" />
+                     {/* Description + Teacher */}
+                     <div className="flex flex-1 flex-col">
+                       <p className="mb-4 h-[78px] overflow-hidden line-clamp-3 leading-relaxed text-black">
+                         {course.description}
+                       </p>
 
-                          <span>0{course.sections?.length} Sections</span>
-                        </div>
-                      </div>
+                       <p className="leading-relaxed text-text-secondary">
+                         Instructor: {course.teacher.fullName}
+                       </p>
+                     </div>
 
-                      <div className="inline-flex items-center gap-2 font-semibold text-primary">
-                        Explore
-                        <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
-                      </div>
-                    </div>
-                  </div>
+                     {/* Footer */}
+                     <div className="mt-auto flex items-center justify-between border-t border-border pt-5">
+                       <div className="flex items-center gap-2 text-sm font-medium text-text-secondary">
+                         {/* Lessons */}
+                         <div className="flex items-center gap-2 text-sm font-medium text-text-secondary">
+                           <BookOpen className="h-4 w-4 text-primary" />
+
+                           <span>
+                             {sections.length} Sections · {totalLessons} Lessons
+                           </span>
+                         </div>
+                       </div>
+
+                       <div className="inline-flex items-center gap-2 font-semibold text-primary">
+                         Explore
+                         <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
+                       </div>
+                     </div>
+                   </div>
                 </div>
               </Link>
             </SwiperSlide>
-          ))}
+            );
+          })}
         </Swiper>
       </div>
     </section>
