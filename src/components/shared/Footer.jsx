@@ -5,7 +5,7 @@ import { GraduationCap, Phone, MapPin } from "lucide-react";
 import { FaFacebookF, FaYoutube } from "react-icons/fa";
 
 import { MdEmail } from "react-icons/md";
-
+import { SUPPORT_EMAIL, SUPPORT_PHONE, ADDRESS } from "@/app/constants";
 export default function Footer() {
   return (
     <footer className="relative overflow-hidden border-t border-border bg-card">
@@ -208,12 +208,9 @@ export default function Footer() {
                 <div>
                   <p className="mb-1 font-semibold text-text-primary">Email</p>
 
-                  <p className="text-sm text-text-secondary">
-                    support@tutortime.com
-                  </p>
+                  <p className="text-sm text-text-secondary">{SUPPORT_EMAIL}</p>
                 </div>
               </div>
-
               {/* Phone */}
               <div className="flex items-start gap-4">
                 <div className="mt-1 flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
@@ -223,12 +220,9 @@ export default function Footer() {
                 <div>
                   <p className="mb-1 font-semibold text-text-primary">Phone</p>
 
-                  <p className="text-sm text-text-secondary">
-                    +880 1XXX-XXXXXX
-                  </p>
+                  <p className="text-sm text-text-secondary">{SUPPORT_PHONE}</p>
                 </div>
               </div>
-
               {/* Address */}
               <div className="flex items-start gap-4">
                 <div className="mt-1 flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
@@ -240,9 +234,7 @@ export default function Footer() {
                     Address
                   </p>
 
-                  <p className="text-sm text-text-secondary">
-                    Dhaka, Bangladesh
-                  </p>
+                  <p className="text-sm text-text-secondary">{ADDRESS}</p>
                 </div>
               </div>
             </div>

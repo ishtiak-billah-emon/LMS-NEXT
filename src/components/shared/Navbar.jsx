@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { NAME } from "@/app/constants";
 import {
   Menu,
   X,
@@ -75,7 +76,7 @@ export default function Navbar() {
           </div>
           <div className="leading-tight">
             <h1 className="text-base font-bold tracking-tight text-slate-900 sm:text-lg">
-              TUTOR TIME
+              {NAME}
             </h1>
             <p className="hidden text-xs text-slate-500 sm:block">
               Learn Smartly
