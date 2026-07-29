@@ -18,6 +18,7 @@ const Register = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showRePassword, setShowRePassword] = useState(false);
+  const [error, setError] = useState("");
 
   const {
     register,
@@ -32,6 +33,8 @@ const Register = () => {
   const { register: registerUser, loading } = useAuth();
 
   const handleRegistration = async (data) => {
+    setError("");
+
     try {
       const payload = {
         fullName: data.name.trim(),
@@ -43,13 +46,22 @@ const Register = () => {
 
       const response = await registerUser(payload);
 
-      console.log("Registration Success:", response);
+      // console.log("Registration Success:", response);
 
       reset();
 
       router.push("/login");
     } catch (error) {
       console.error("Registration Failed:", error);
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Registration failed. Please try again.";
+      if (message.includes("duplicate key") || message.includes("phone")) {
+        setError("This phone number is already registered. Please use a different number or log in.");
+      } else {
+        setError(message);
+      }
     }
   };
 
@@ -170,6 +182,12 @@ const Register = () => {
             {errors.phone && (
               <p className="mt-1 text-sm text-red-500">
                 {errors.phone.message}
+              </p>
+            )}
+
+            {error && (
+              <p role="alert" className="mt-1 text-sm text-red-500">
+                {error}
               </p>
             )}
           </Field>{" "}
