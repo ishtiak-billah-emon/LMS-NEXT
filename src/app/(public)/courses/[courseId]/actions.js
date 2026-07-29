@@ -6,7 +6,7 @@ const API = process.env.NEXT_PUBLIC_API_URL;
 
 export async function createEnrollmentRequest(data) {
   const cookieStore = await cookies();
-  console.log('dataaaaaaaa', data);
+  // console.log('dataaaaaaaa', data);
   const res = await fetch(`${API}/courses/create-enrollment-request`, {
     method: "POST",
     headers: {

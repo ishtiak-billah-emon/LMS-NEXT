@@ -38,7 +38,7 @@ export default async function CourseDetails({ params }) {
     completedLessons = 0,
     totalLessons = 0,
   } = await getCourse(courseId);
-  console.log("isEnrolled:", isEnrolled);
+  // console.log("isEnrolled:", isEnrolled);
 
   if (!course) {
     notFound();
