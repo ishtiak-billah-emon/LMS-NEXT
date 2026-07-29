@@ -16,11 +16,11 @@ export async function getEnrollments() {
     cache: "no-store",
   });
 
-  console.log("STATUS:", res.status);
+  // console.log("STATUS:", res.status);
 
   const result = await res.json();
 
-  console.log("RESULT:", result);
+  // console.log("RESULT:", result);
 
   if (!res.ok) {
     throw new Error("Failed to fetch enrollments");

@@ -54,7 +54,7 @@ export default function EditEnrollmentDialog({
       // TODO:
       // await updateEnrollment(enrollment._id, formData);
 
-      console.log("Updating:", enrollment._id, formData);
+      // console.log("Updating:", enrollment._id, formData);
 
       onOpenChange(false);
     } catch (err) {

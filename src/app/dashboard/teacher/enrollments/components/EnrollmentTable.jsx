@@ -21,7 +21,7 @@ import EditEnrollmentDialog from "./EditEnrollmentDialog";
 import DeleteEnrollmentDialog from "./DeleteEnrollmentDialog";
 
 export default function EnrollmentTable({ enrollments = [] }) {
-  console.log("TABLE:", enrollments);
+  // console.log("TABLE:", enrollments);
   const router = useRouter();
 
   const [search, setSearch] = useState("");
