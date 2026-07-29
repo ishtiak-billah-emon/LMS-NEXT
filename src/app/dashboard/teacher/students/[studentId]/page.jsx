@@ -11,7 +11,7 @@ export default async function StudentDetailsPage({ params }) {
 
   const socialLinks = student.socialLinks ?? {};
   const enrolledCourses = (student.enrolledCourses ?? []).filter(Boolean);
-console.log('check bug:',enrolledCourses);
+// console.log('check bug:',enrolledCourses);
   return (
     <main className="mx-auto max-w-7xl space-y-8 p-8">
       {/* Profile */}
