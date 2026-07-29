@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { ImageIcon, Plus, Trash2, GripVertical, FileText } from "lucide-react";
+import { ImageIcon, Plus, Trash2, GripVertical, FileText, Loader2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,14 +14,22 @@ function generateId() {
 }
 
 function serializeBlocks(blocks) {
+  const escapeHtml = (value) =>
+    value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
   return blocks
     .map((block) => {
       if (block.type === "image") {
         const src = block.content || "";
-        return src ? `<img src="${src}" alt="Blog image" />` : "";
+        return src ? `<img src="${escapeHtml(src)}" alt="Blog image" />` : "";
       }
       const text = block.content || "";
-      return text ? `<p>${text}</p>` : "";
+      return text ? `<p>${escapeHtml(text).replace(/\n/g, "<br />")}</p>` : "";
     })
     .join("\n");
 }
@@ -107,25 +115,24 @@ function ParagraphBlock({ block, onChange, onDelete }) {
   );
 }
 
-function ImageBlock({ block, onChange, onDelete }) {
-  const fileInputRef = useRef(null);
-  const [preview, setPreview] = useState(block.content || "");
+function ImageBlock({ block, onChange, onDelete, onImageUpload }) {
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const dataUrl = reader.result;
-      setPreview(dataUrl);
-      onChange(block.id, dataUrl);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleUrlChange = (url) => {
-    setPreview(url);
-    onChange(block.id, url);
+    if (!file || !onImageUpload) return;
+    setUploading(true);
+    setUploadError("");
+    try {
+      const imageUrl = await onImageUpload(file);
+      onChange(block.id, imageUrl);
+    } catch (error) {
+      setUploadError(error?.message || "Image upload failed. Please try again.");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
   };
 
   return (
@@ -145,61 +152,56 @@ function ImageBlock({ block, onChange, onDelete }) {
           <ImageIcon className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="text-xs font-medium text-muted-foreground">Image</span>
         </div>
-        {preview && (
+        {block.content && (
           <div className="relative mb-3 h-48 w-full overflow-hidden rounded-lg border border-border">
             <img
-              src={preview}
+              src={block.content}
               alt="Block preview"
               className="h-full w-full object-cover"
             />
           </div>
         )}
         <div className="space-y-2">
-          <Input
-            type="url"
-            value={block.content || ""}
-            onChange={(e) => handleUrlChange(e.target.value)}
-            placeholder="Paste image URL or upload below"
-          />
           <div className="flex items-center gap-3">
             <input
-              ref={fileInputRef}
+              id={`blog-image-${block.id}`}
               type="file"
               accept="image/*"
               onChange={handleFileChange}
               className="hidden"
+              disabled={uploading || !onImageUpload}
             />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => fileInputRef.current?.click()}
+            <label
+              htmlFor={`blog-image-${block.id}`}
+              className={`inline-flex h-9 cursor-pointer items-center justify-center rounded-md border border-input bg-background px-3 text-sm font-medium shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground ${uploading || !onImageUpload ? "pointer-events-none cursor-not-allowed opacity-50" : ""}`}
             >
-              <ImageIcon className="mr-1.5 h-3.5 w-3.5" />
-              Upload
-            </Button>
-            {preview && (
+              {uploading ? (
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <ImageIcon className="mr-1.5 h-3.5 w-3.5" />
+              )}
+              {uploading ? "Uploading..." : "Upload to Cloudinary"}
+            </label>
+            {block.content && (
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => {
-                  setPreview("");
-                  onChange(block.id, "");
-                }}
+                onClick={() => onChange(block.id, "")}
                 className="text-muted-foreground"
               >
                 Remove
               </Button>
             )}
           </div>
+          {uploadError && <p role="alert" className="text-sm text-destructive">{uploadError}</p>}
         </div>
       </div>
     </div>
   );
 }
 
-export default function BlogEditor({ blocks, onChange, preview }) {
+export default function BlogEditor({ blocks, onChange, preview, onImageUpload }) {
   const addParagraph = useCallback(() => {
     const newBlock = { id: generateId(), type: "paragraph", content: "" };
     onChange([...blocks, newBlock]);
@@ -246,7 +248,7 @@ export default function BlogEditor({ blocks, onChange, preview }) {
                   ) : null;
                 }
                 return block.content ? (
-                  <div key={block.id} className="leading-8 text-base" dangerouslySetInnerHTML={{ __html: block.content }} />
+                  <p key={block.id} className="whitespace-pre-wrap leading-8 text-base">{block.content}</p>
                 ) : null;
               })}
             </div>
@@ -282,7 +284,7 @@ export default function BlogEditor({ blocks, onChange, preview }) {
           <CardContent className="flex flex-col items-center justify-center py-12 text-center">
             <FileText className="mb-3 h-10 w-10 text-muted-foreground/50" />
             <p className="text-sm text-muted-foreground">No content yet</p>
-            <p className="mt-1 text-xs text-muted-foreground/70">Click "Add Paragraph" or "Add Image" to start building your blog</p>
+            <p className="mt-1 text-xs text-muted-foreground/70">Use the add controls above to start building your blog.</p>
           </CardContent>
         </Card>
       ) : (
@@ -320,6 +322,7 @@ export default function BlogEditor({ blocks, onChange, preview }) {
                   block={block}
                   onChange={updateBlock}
                   onDelete={() => deleteBlock(block.id)}
+                  onImageUpload={onImageUpload}
                 />
               )}
             </div>

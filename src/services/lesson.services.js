@@ -1,25 +1,13 @@
-import { cookies } from "next/headers";
+import { get } from "@/lib/server/express-client";
 
 export async function getLesson(courseSlug, lessonSlug) {
-  const cookieStore = await cookies();
-
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/courses/${courseSlug}/${lessonSlug}`,
-    {
-      headers: {
-        Cookie: cookieStore.toString(),
-      },
-      cache: "no-store",
-    },
-  );
-
-  const result = await res.json();
+  const response = await get(`/courses/${courseSlug}/${lessonSlug}`);
+  const result = await response.json();
 
   return {
-    ok: res.ok,
-    status: res.status,
+    ok: response.ok,
+    status: response.status,
     data: result.data,
     message: result.message,
   };
 }
-

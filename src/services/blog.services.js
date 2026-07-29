@@ -37,4 +37,9 @@ export const blogService = {
 
   toggleBlogFeatured: (blogId) =>
     handleRequest(api.patch(`/blogs/${blogId}/featured`)),
+
+  uploadBlogImage: (formData) =>
+    handleRequest(api.post("/blogs/upload-image", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })),
 };
