@@ -1,7 +1,7 @@
 import { getCourses } from "@/lib/server/course";
 import CourseFilter from "./CourseFilter";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export default async function CoursesPage() {
   const courses = await getCourses();

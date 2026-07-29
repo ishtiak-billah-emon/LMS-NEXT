@@ -5,7 +5,7 @@ import { BookOpen, Calendar, ArrowLeft } from "lucide-react";
 import { getBlogBySlug } from "@/lib/server/blog";
 import BlogActions from "./BlogActions";
 
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export default async function BlogDetailPage({ params }) {
   const { slug } = await params;

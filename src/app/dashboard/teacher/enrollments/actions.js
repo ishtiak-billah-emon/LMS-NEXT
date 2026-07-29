@@ -1,105 +1,36 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
+import { getJson, postJson, patchJson, deleteJson } from "@/lib/server/express-client";
 
 export async function getEnrollments() {
-  const cookieStore = await cookies();
-
-  const res = await fetch(`${API}/enrollments`, {
-    method: "GET",
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
-    cache: "no-store",
-  });
-
-  // console.log("STATUS:", res.status);
-
-  const result = await res.json();
-
-  // console.log("RESULT:", result);
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch enrollments");
-  }
+  const result = await getJson("/enrollments", { cache: "no-store" });
 
   return result.data;
 }
-// ============================
-// Create Enrollment
-// ============================
 
 export async function createEnrollment(data) {
-  const cookieStore = await cookies();
-
-  const res = await fetch(`${API}/enrollments`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: cookieStore.toString(),
-    },
+  const result = await postJson("/enrollments", {
     body: JSON.stringify(data),
   });
-
-  const result = await res.json();
-
-  if (!res.ok) {
-    throw new Error(result.message || "Failed to create enrollment.");
-  }
 
   revalidatePath("/dashboard/teacher/enrollments");
 
   return result;
 }
-// ============================
-// Update Enrollment
-// ============================
 
 export async function updateEnrollment(id, data) {
-  const cookieStore = await cookies();
-
-  const res = await fetch(`${API}/enrollments/${id}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: cookieStore.toString(),
-    },
+  const result = await patchJson(`/enrollments/${id}`, {
     body: JSON.stringify(data),
   });
-
-  const result = await res.json();
-
-  if (!res.ok) {
-    throw new Error(result.message || "Failed to update enrollment.");
-  }
 
   revalidatePath("/dashboard/teacher/enrollments");
 
   return result;
 }
 
-// ============================
-// Delete Enrollment
-// ============================
-
 export async function deleteEnrollment(id) {
-  const cookieStore = await cookies();
-
-  const res = await fetch(`${API}/enrollments/${id}`, {
-    method: "DELETE",
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
-  });
-
-  const result = await res.json();
-
-  if (!res.ok) {
-    throw new Error(result.message || "Failed to delete enrollment.");
-  }
+  const result = await deleteJson(`/enrollments/${id}`);
 
   revalidatePath("/dashboard/teacher/enrollments");
 

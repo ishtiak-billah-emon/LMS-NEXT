@@ -1,34 +1,20 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
+import { post, patch, get, del } from "@/lib/server/express-client";
 
 export async function createCourse(formData) {
-  const cookieStore = await cookies();
-  const thumbnail = formData.get("thumbnail");
-
   formData.set("isFeatured", formData.get("isFeatured") === "on" ? "true" : "false");
 
+  const thumbnail = formData.get("thumbnail");
   if (!thumbnail || thumbnail.size === 0) {
     formData.delete("thumbnail");
   }
 
-  const res = await fetch(`${API}/courses/create-course`, {
-    method: "POST",
-    headers: {
-      // Do not set Content-Type here; fetch must add the multipart boundary for the image upload.
-      Cookie: cookieStore.toString(),
-    },
+  const res = await post("/courses/create-course", {
     body: formData,
   });
-
   const result = await res.json();
-
-  if (!res.ok) {
-    throw new Error(result.message || "Failed to create course.");
-  }
 
   revalidatePath("/dashboard/teacher/courses");
   revalidatePath("/courses");
@@ -37,29 +23,17 @@ export async function createCourse(formData) {
 }
 
 export async function updateCourse(courseId, courseSlug, formData) {
-  const cookieStore = await cookies();
-  const thumbnail = formData.get("thumbnail");
-
   formData.set("isFeatured", formData.get("isFeatured") === "on" ? "true" : "false");
 
+  const thumbnail = formData.get("thumbnail");
   if (!thumbnail || thumbnail.size === 0) {
     formData.delete("thumbnail");
   }
 
-  const res = await fetch(`${API}/courses/${courseId}`, {
-    method: "PATCH",
-    headers: {
-      // Do not set Content-Type here; fetch must add the multipart boundary for the thumbnail upload.
-      Cookie: cookieStore.toString(),
-    },
+  const res = await patch(`/courses/${courseId}`, {
     body: formData,
   });
-
   const result = await res.json();
-
-  if (!res.ok) {
-    throw new Error(result.message || "Failed to update course.");
-  }
 
   revalidatePath("/dashboard/teacher/courses");
   revalidatePath(`/dashboard/teacher/courses/${courseSlug}`);
@@ -69,138 +43,67 @@ export async function updateCourse(courseId, courseSlug, formData) {
 }
 
 export async function getCoursesByTeacher(teacherId) {
-  const cookieStore = await cookies();
-
-  const res = await fetch(`${API}/courses/teacher/${teacherId}`, {
-    method: "GET",
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
+  const result = await get(`/courses/teacher/${teacherId}`, {
     cache: "no-store",
   });
+  const json = await result.json();
 
-  const result = await res.json();
-
-  if (!res.ok) {
-    throw new Error(result.message || "Failed to fetch teacher courses.");
-  }
-
-  return result.data?.courses || [];
+  return json.data?.courses || [];
 }
 
 export async function changeCourseStatus(courseId, courseSlug, status) {
-  const cookieStore = await cookies();
-
-  const res = await fetch(`${API}/courses/${courseId}/status`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: cookieStore.toString(),
-    },
+  const result = await patch(`/courses/${courseId}/status`, {
     body: JSON.stringify({ status }),
   });
-
-  const result = await res.json();
-
-  if (!res.ok) {
-    throw new Error(result.message || "Failed to change course status.");
-  }
+  const json = await result.json();
 
   revalidatePath("/dashboard/teacher/courses");
   revalidatePath(`/dashboard/teacher/courses/${courseSlug}`);
   revalidatePath("/courses");
 
-  return result;
+  return json;
 }
 
 export async function createSection(courseId, courseSlug, data) {
-  const cookieStore = await cookies();
-
-  const res = await fetch(`${API}/courses/${courseId}/create-section`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: cookieStore.toString(),
-    },
+  const result = await post(`/courses/${courseId}/create-section`, {
     body: JSON.stringify(data),
   });
-
-  const result = await res.json();
-
-  if (!res.ok) {
-    throw new Error(result.message || "Failed to create section.");
-  }
+  const json = await result.json();
 
   revalidatePath(`/dashboard/teacher/courses/${courseSlug}`);
 
-  return result;
+  return json;
 }
 
 export async function updateSection(courseId, sectionId, courseSlug, data) {
-  const cookieStore = await cookies();
-
-  const res = await fetch(`${API}/courses/${courseId}/sections/${sectionId}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: cookieStore.toString(),
-    },
+  const result = await patch(`/courses/${courseId}/sections/${sectionId}`, {
     body: JSON.stringify(data),
   });
-
-  const result = await res.json();
-
-  if (!res.ok) {
-    throw new Error(result.message || "Failed to update section.");
-  }
+  const json = await result.json();
 
   revalidatePath(`/dashboard/teacher/courses/${courseSlug}`);
 
-  return result;
+  return json;
 }
 
 export async function deleteSection(courseId, sectionId, courseSlug) {
-  const cookieStore = await cookies();
-
-  const res = await fetch(`${API}/courses/${courseId}/sections/${sectionId}`, {
-    method: "DELETE",
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
-  });
-
-  const result = await res.json();
-
-  if (!res.ok) {
-    throw new Error(result.message || "Failed to delete section.");
-  }
+  const result = await del(`/courses/${courseId}/sections/${sectionId}`);
+  const json = await result.json();
 
   revalidatePath(`/dashboard/teacher/courses/${courseSlug}`);
 
-  return result;
+  return json;
 }
 
 export async function createLesson(courseId, sectionId, courseSlug, data) {
-  const cookieStore = await cookies();
-
-  const res = await fetch(`${API}/courses/${courseId}/${sectionId}/create-lesson`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: cookieStore.toString(),
-    },
+  const result = await post(`/courses/${courseId}/${sectionId}/create-lesson`, {
     body: JSON.stringify(data),
   });
-
-  const result = await res.json();
-
-  if (!res.ok) {
-    throw new Error(result.message || "Failed to create lesson.");
-  }
+  const json = await result.json();
 
   revalidatePath(`/dashboard/teacher/courses/${courseSlug}`);
 
-  return result;
+  return json;
 }
 
 export async function updateLesson(
@@ -210,53 +113,28 @@ export async function updateLesson(
   courseSlug,
   data,
 ) {
-  const cookieStore = await cookies();
-
-  const res = await fetch(
-    `${API}/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}`,
+  const result = await patch(
+    `/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}`,
     {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: cookieStore.toString(),
-      },
       body: JSON.stringify(data),
     },
   );
-
-  const result = await res.json();
-
-  if (!res.ok) {
-    throw new Error(result.message || "Failed to update lesson.");
-  }
+  const json = await result.json();
 
   revalidatePath(`/dashboard/teacher/courses/${courseSlug}`);
 
-  return result;
+  return json;
 }
 
 export async function deleteLesson(courseId, sectionId, lessonId, courseSlug) {
-  const cookieStore = await cookies();
-
-  const res = await fetch(
-    `${API}/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}`,
-    {
-      method: "DELETE",
-      headers: {
-        Cookie: cookieStore.toString(),
-      },
-    },
+  const result = await del(
+    `/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}`,
   );
-
-  const result = await res.json();
-
-  if (!res.ok) {
-    throw new Error(result.message || "Failed to delete lesson.");
-  }
+  const json = await result.json();
 
   revalidatePath(`/dashboard/teacher/courses/${courseSlug}`);
 
-  return result;
+  return json;
 }
 
 export async function createResource(
@@ -266,29 +144,17 @@ export async function createResource(
   courseSlug,
   data,
 ) {
-  const cookieStore = await cookies();
-
-  const res = await fetch(
-    `${API}/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}/resources`,
+  const result = await post(
+    `/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}/resources`,
     {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: cookieStore.toString(),
-      },
       body: JSON.stringify(data),
     },
   );
-
-  const result = await res.json();
-
-  if (!res.ok) {
-    throw new Error(result.message || "Failed to create resource.");
-  }
+  const json = await result.json();
 
   revalidatePath(`/dashboard/teacher/courses/${courseSlug}`);
 
-  return result;
+  return json;
 }
 
 export async function updateResource(
@@ -299,29 +165,17 @@ export async function updateResource(
   courseSlug,
   data,
 ) {
-  const cookieStore = await cookies();
-
-  const res = await fetch(
-    `${API}/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}/resources/${resourceId}`,
+  const result = await patch(
+    `/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}/resources/${resourceId}`,
     {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: cookieStore.toString(),
-      },
       body: JSON.stringify(data),
     },
   );
-
-  const result = await res.json();
-
-  if (!res.ok) {
-    throw new Error(result.message || "Failed to update resource.");
-  }
+  const json = await result.json();
 
   revalidatePath(`/dashboard/teacher/courses/${courseSlug}`);
 
-  return result;
+  return json;
 }
 
 export async function deleteResource(
@@ -331,25 +185,12 @@ export async function deleteResource(
   resourceId,
   courseSlug,
 ) {
-  const cookieStore = await cookies();
-
-  const res = await fetch(
-    `${API}/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}/resources/${resourceId}`,
-    {
-      method: "DELETE",
-      headers: {
-        Cookie: cookieStore.toString(),
-      },
-    },
+  const result = await del(
+    `/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}/resources/${resourceId}`,
   );
-
-  const result = await res.json();
-
-  if (!res.ok) {
-    throw new Error(result.message || "Failed to delete resource.");
-  }
+  const json = await result.json();
 
   revalidatePath(`/dashboard/teacher/courses/${courseSlug}`);
 
-  return result;
+  return json;
 }
