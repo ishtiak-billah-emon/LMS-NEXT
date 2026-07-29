@@ -1,53 +1,52 @@
-const API = process.env.NEXT_PUBLIC_API_URL;
-import { cookies } from "next/headers";
+import { ExpressApiError, getJson } from "./express-client";
 
 export async function getCourses() {
-  const res = await fetch(`${API}/courses`, {
-    next: {
-      revalidate: 300,
-    },
-  });
+  try {
+    const result = await getJson("/courses", {
+      cache: "force-cache",
+      next: {
+        revalidate: 300,
+      },
+    });
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch courses");
+    return result.data.courses;
+  } catch (error) {
+    if (error instanceof ExpressApiError) {
+      throw new Error("Failed to fetch courses");
+    }
+
+    throw error;
   }
-
-  const result = await res.json();
-
-  return result.data.courses;
 }
 
 export async function getFeaturedCourses() {
-  const res = await fetch(`${API}/courses/featured`, {
-    next: {
-      revalidate: 300,
-    },
-  });
+  try {
+    const result = await getJson("/courses/featured", {
+      cache: "force-cache",
+      next: {
+        revalidate: 300,
+      },
+    });
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch featured courses");
+    return result.data.courses;
+  } catch (error) {
+    if (error instanceof ExpressApiError) {
+      throw new Error("Failed to fetch featured courses");
+    }
+
+    throw error;
   }
-
-  const result = await res.json();
-
-  return result.data.courses;
 }
 
 export async function getCourse(slug) {
-  const cookieStore = await cookies();
+  try {
+    const result = await getJson(`/courses/${slug}`);
+    return result.data;
+  } catch (error) {
+    if (error instanceof ExpressApiError) {
+      return null;
+    }
 
-  const res = await fetch(`${API}/courses/${slug}`, {
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    return null;
+    throw error;
   }
-
-  const result = await res.json();
-
-  return result.data;
 }

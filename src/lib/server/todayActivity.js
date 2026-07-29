@@ -1,22 +1,14 @@
-import { cookies } from "next/headers";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
+import { ExpressApiError, getJson } from "./express-client";
 
 export async function getTodayActivity() {
-  const cookieStore = await cookies();
+  try {
+    const result = await getJson("/users/today-activity");
+    return result.data ?? [];
+  } catch (error) {
+    if (error instanceof ExpressApiError) {
+      return [];
+    }
 
-  const res = await fetch(`${API}/users/today-activity`, {
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    return [];
+    throw error;
   }
-
-  const result = await res.json();
-
-  return result.data ?? [];
 }

@@ -1,70 +1,49 @@
-import { cookies } from "next/headers";
+import { ExpressApiError, deleteJson, getJson, postJson } from "./express-client";
 
-const API = process.env.NEXT_PUBLIC_API_URL;
+function getErrorMessage(error, fallback) {
+  if (!(error instanceof ExpressApiError)) return null;
+
+  try {
+    return JSON.parse(error.body || "{}").message || fallback;
+  } catch {
+    return error.body || fallback;
+  }
+}
 
 export async function getCourseReviews(courseId, page = 1, limit = 10) {
-  const cookieStore = await cookies();
+  try {
+    const result = await getJson(`/reviews/course/${courseId}?page=${page}&limit=${limit}`);
+    return result.data;
+  } catch (error) {
+    if (!(error instanceof ExpressApiError)) throw error;
 
-  const res = await fetch(
-    `${API}/reviews/course/${courseId}?page=${page}&limit=${limit}`,
-    {
-      headers: {
-        Cookie: cookieStore.toString(),
-      },
-      cache: "no-store",
-    }
-  );
-
-  if (!res.ok) {
     return { reviews: [], pagination: { page, limit, totalReviews: 0, totalPages: 0 } };
   }
-
-  const result = await res.json();
-  return result.data;
 }
 
 export async function createReview(courseId, { rating, comment }) {
-  const cookieStore = await cookies();
+  try {
+    const result = await postJson(`/reviews/course/${courseId}`, {
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rating, comment }),
+    });
+    return result.data;
+  } catch (error) {
+    const message = getErrorMessage(error, "Failed to submit review");
+    if (message) throw new Error(message);
 
-  const res = await fetch(`${API}/reviews/course/${courseId}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: cookieStore.toString(),
-    },
-    body: JSON.stringify({ rating, comment }),
-  });
-
-  const contentType = res.headers.get("content-type") || "";
-  const result = contentType.includes("application/json")
-    ? await res.json()
-    : { message: await res.text() };
-
-  if (!res.ok) {
-    throw new Error(result.message || "Failed to submit review");
+    throw error;
   }
-
-  return result.data;
 }
 
 export async function deleteReview(reviewId) {
-  const cookieStore = await cookies();
+  try {
+    const result = await deleteJson(`/reviews/${reviewId}`);
+    return result.data;
+  } catch (error) {
+    const message = getErrorMessage(error, "Failed to delete review");
+    if (message) throw new Error(message);
 
-  const res = await fetch(`${API}/reviews/${reviewId}`, {
-    method: "DELETE",
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
-  });
-
-  const contentType = res.headers.get("content-type") || "";
-  const result = contentType.includes("application/json")
-    ? await res.json()
-    : { message: await res.text() };
-
-  if (!res.ok) {
-    throw new Error(result.message || "Failed to delete review");
+    throw error;
   }
-
-  return result.data;
 }

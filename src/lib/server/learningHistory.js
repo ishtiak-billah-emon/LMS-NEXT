@@ -1,22 +1,14 @@
-import { cookies } from "next/headers";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
+import { ExpressApiError, getJson } from "./express-client";
 
 export async function getLearningHistory() {
-  const cookieStore = await cookies();
+  try {
+    const result = await getJson("/users/learning-history");
+    return result.data ?? null;
+  } catch (error) {
+    if (error instanceof ExpressApiError) {
+      return null;
+    }
 
-  const res = await fetch(`${API}/users/learning-history`, {
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    return null;
+    throw error;
   }
-
-  const result = await res.json();
-
-  return result.data ?? null;
 }

@@ -1,45 +1,26 @@
-import { cookies } from "next/headers";
-
-const API = process.env.NEXT_PUBLIC_API_URL;
+import { ExpressApiError, getJson } from "./express-client";
 
 export async function getMyCourses() {
-  const cookieStore = await cookies();
+  try {
+    const result = await getJson("/users/my-courses");
+    return result.data;
+  } catch (error) {
+    if (error instanceof ExpressApiError) {
+      throw new Error("Failed to fetch courses");
+    }
 
-  const res = await fetch(`${API}/users/my-courses`, {
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch courses");
+    throw error;
   }
-
-  const result = await res.json();
-
-  return result.data;
 }
 
 export async function getEnrollments() {
-  const cookieStore = await cookies();
+  try {
+    return await getJson("/enrollments");
+  } catch (error) {
+    if (error instanceof ExpressApiError) {
+      throw new Error("Failed to fetch enrollments");
+    }
 
-  const cookieHeader = cookieStore
-    .getAll()
-    .map((cookie) => `${cookie.name}=${cookie.value}`)
-    .join("; ");
-
-  const res = await fetch(`${API}/enrollments`, {
-    method: "GET",
-    headers: {
-      Cookie: cookieHeader,
-    },
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch enrollments");
+    throw error;
   }
-
-  return res.json();
 }

@@ -1,42 +1,29 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-const API = process.env.NEXT_PUBLIC_API_URL;
+import { ExpressApiError, getJson } from "./express-client";
 
 export async function getCurrentUser() {
-  const cookieStore = await cookies();
+  try {
+    const result = await getJson("/users/current-user");
+    return result.data;
+  } catch (error) {
+    if (error instanceof ExpressApiError) {
+      redirect("/login");
+    }
 
-  const res = await fetch(`${API}/users/current-user`, {
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    redirect("/login");
+    throw error;
   }
-
-  const result = await res.json();
-
-  return result.data;
 }
 
 export async function getOptionalCurrentUser() {
-  const cookieStore = await cookies();
+  try {
+    const result = await getJson("/users/current-user");
+    return result.data;
+  } catch (error) {
+    if (error instanceof ExpressApiError) {
+      return null;
+    }
 
-  const res = await fetch(`${API}/users/current-user`, {
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    return null;
+    throw error;
   }
-
-  const result = await res.json();
-
-  return result.data;
 }

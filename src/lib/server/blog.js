@@ -1,63 +1,49 @@
-import { cookies } from "next/headers";
+import { ExpressApiError, getJson } from "./express-client";
 
-const API = process.env.NEXT_PUBLIC_API_URL;
+function getErrorMessage(error, fallback) {
+  if (!(error instanceof ExpressApiError)) return null;
 
-async function getResponseContent(response) {
-  const contentType = response.headers.get("content-type") || "";
-  return contentType.includes("application/json")
-    ? response.json()
-    : { message: await response.text() };
+  try {
+    return JSON.parse(error.body || "{}").message || fallback;
+  } catch {
+    return error.body || fallback;
+  }
 }
 
 export async function getBlogs(params = {}) {
-  const cookieStore = await cookies();
   const queryString = new URLSearchParams(params).toString();
-  const url = queryString
-    ? `${API}/blogs?${queryString}`
-    : `${API}/blogs`;
+  const path = queryString ? `/blogs?${queryString}` : "/blogs";
+  try {
+    const result = await getJson(path);
+    return result.data ?? result;
+  } catch (error) {
+    const message = getErrorMessage(error, "Failed to fetch blogs.");
+    if (message) throw new Error(message);
 
-  const response = await fetch(url, {
-    headers: { Cookie: cookieStore.toString() },
-    cache: "no-store",
-  });
-
-  const result = await getResponseContent(response);
-
-  if (!response.ok) {
-    throw new Error(result.message || "Failed to fetch blogs.");
+    throw error;
   }
-
-  return result.data ?? result;
 }
 
 export async function getBlogBySlug(slug) {
-  const cookieStore = await cookies();
-  const response = await fetch(`${API}/blogs/slug/${slug}`, {
-    headers: { Cookie: cookieStore.toString() },
-    cache: "no-store",
-  });
+  try {
+    const result = await getJson(`/blogs/slug/${slug}`);
+    return result.data ?? result;
+  } catch (error) {
+    const message = getErrorMessage(error, "Failed to fetch blog.");
+    if (message) throw new Error(message);
 
-  const result = await getResponseContent(response);
-
-  if (!response.ok) {
-    throw new Error(result.message || "Failed to fetch blog.");
+    throw error;
   }
-
-  return result.data ?? result;
 }
 
 export async function getBlogById(blogId) {
-  const cookieStore = await cookies();
-  const response = await fetch(`${API}/blogs/${blogId}`, {
-    headers: { Cookie: cookieStore.toString() },
-    cache: "no-store",
-  });
+  try {
+    const result = await getJson(`/blogs/${blogId}`);
+    return result.data ?? result;
+  } catch (error) {
+    const message = getErrorMessage(error, "Failed to fetch blog.");
+    if (message) throw new Error(message);
 
-  const result = await getResponseContent(response);
-
-  if (!response.ok) {
-    throw new Error(result.message || "Failed to fetch blog.");
+    throw error;
   }
-
-  return result.data ?? result;
 }
