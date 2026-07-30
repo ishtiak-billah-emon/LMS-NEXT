@@ -33,7 +33,7 @@ export class ExpressApiError extends Error {
  * @returns {string}
  */
 function getApiUrl() {
-  const apiUrl = process.env.API_URL?.trim();
+  const apiUrl = process.env.API_URL?.trim() || process.env.NEXT_PUBLIC_API_URL?.trim();
 
   if (!apiUrl) {
     throw new Error("API_URL must be set before making an Express API request.");
