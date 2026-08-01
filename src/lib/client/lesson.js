@@ -1,6 +1,6 @@
 
 
-const API = process.env.NEXT_PUBLIC_API_URL;
+const API = "/api";
 
 export async function markLessonComplete(courseSlug, lessonSlug) {
   const res = await fetch(`${API}/courses/${courseSlug}/${lessonSlug}/complete`, {

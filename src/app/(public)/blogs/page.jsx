@@ -10,7 +10,9 @@ export default function BlogsPage() {
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/blogs`);
+        const res = await fetch(`${"/api"}/blogs`, {
+          credentials: "include",
+        });
         const data = await res.json();
         setBlogs(data?.data?.blogs || data?.blogs || []);
       } catch (err) {
