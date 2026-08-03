@@ -47,6 +47,7 @@ export default async function LearnPage({ params }) {
   const canWatchLesson = canWatch || isCourseTeacher;
 
   function getEmbedUrl(url) {
+    if (!url) return "";
     const id =
       url.match(/youtu\.be\/([^?]+)/)?.[1] || url.match(/v=([^&]+)/)?.[1];
 
