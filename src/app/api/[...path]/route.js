@@ -78,6 +78,16 @@ async function proxy(request, pathSegments = []) {
 
   const responseHeaders = new Headers(response.headers);
 
+  // fetch() may transparently decode the upstream body (e.g. gzip) while
+  // leaving these framing headers describing the original wire format.
+  // Forwarding them verbatim onto the re-streamed body causes the browser
+  // to see a length/encoding mismatch and abort the response as a network
+  // error, even though the headers (incl. Set-Cookie) already landed.
+  responseHeaders.delete("content-encoding");
+  responseHeaders.delete("content-length");
+  responseHeaders.delete("transfer-encoding");
+  responseHeaders.delete("connection");
+
   const setCookieHeaders = responseHeaders.getSetCookie();
 
   responseHeaders.delete("set-cookie");
