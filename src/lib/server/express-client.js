@@ -107,6 +107,15 @@ export async function expressRequest(path, init = {}) {
 
   const cookieStore = await cookies();
   const requestHeaders = new Headers(fetchInit.headers);
+
+  if (
+    fetchInit.body &&
+    typeof fetchInit.body === "string" &&
+    !requestHeaders.has("content-type")
+  ) {
+    requestHeaders.set("content-type", "application/json");
+  }
+
   const cookieHeader = cookieStore.toString();
   const controller = new AbortController();
   let timedOut = false;
